@@ -20,5 +20,6 @@ executable project-tracker
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7
+                      ,snap
   -- hs-source-dirs:      
   default-language:    Haskell2010
