@@ -21,5 +21,6 @@ executable project-tracker
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7
                       ,snap
+                      ,snaplet-postgresql-simple
   -- hs-source-dirs:      
   default-language:    Haskell2010
