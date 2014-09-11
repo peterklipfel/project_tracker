@@ -20,9 +20,42 @@ import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
 import           Snap.Util.FileServe
 import           Heist
+import           Snap.Snaplet.PostgresqlSimple
+import           Database.PostgreSQL.Simple.FromRow
 import qualified Heist.Interpreted as I
 ------------------------------------------------------------------------------
 import           Application
+
+
+data Project = Project
+  { title :: T.Text
+  , description :: T.Text
+  }
+
+instance FromRow Project where
+  fromRow = Project <$> field <*> field
+
+instance Show Project where
+    show (Project title description) =
+      "Project { title: " ++ T.unpack title ++ ", description: " ++ T.unpack description ++ " }n"
+
+createNewProject :: Handler App App ()
+createNewProject = do
+  title <- getPostParam "title"
+  description <- getPostParam "description"
+  newProject <- execute "INSERT INTO projects VALUES (?, ?)" (title, description)
+  redirect "/"
+
+getAllProjects :: Handler App App ()
+getAllProjects = do
+  allProjects <- query_ "SELECT * FROM projects"
+  liftIO $ print (allProjects :: [Project])
+
+deleteProjectByTitle :: Handler App App ()
+deleteProjectByTitle = do
+  title <- getPostParam "title"
+  deleteProject <- execute "DELETE FROM projects WHERE title = ?" (Only title)
+  redirect "/"
 
 
 ------------------------------------------------------------------------------
@@ -65,6 +98,9 @@ routes :: [(ByteString, Handler App App ())]
 routes = [ ("/login",    with auth handleLoginSubmit)
          , ("/logout",   with auth handleLogout)
          , ("/new_user", with auth handleNewUser)
+         , ("/project/new", method POST createNewProject)
+         , ("/projects", method GET getAllProjects)
+         , ("/project", method DELETE deleteProjectByTitle)
          , ("",          serveDirectory "static")
          ]
 
